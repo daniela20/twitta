@@ -1,4 +1,4 @@
-# Project 4 - *Twitta*
+# Project 4 - Twitta
 
 **Twitta** is a basic twitter app to read and compose tweets the [Twitter API](https://apps.twitter.com/).
 
