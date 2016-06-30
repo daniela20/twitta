@@ -16,7 +16,7 @@ The following **required** functionality is completed:
 - [ ] User should display the relative timestamp for each tweet "8m", "7h"
 - [x] Retweeting and favoriting should increment the retweet and favorite count.
 - [ ] User can tap on a tweet to view it, with controls to retweet, favorite, and reply.
-- [ ] User can compose a new tweet by tapping on a compose button.
+- [x] User can compose a new tweet by tapping on a compose button.
 - [ ] User can tap the profile image in any tweet to see another user's profile
    - [ ] Contains the user header view: picture and tagline
    - [ ] Contains a section with the users basic stats: # tweets, # following, # followers
@@ -29,11 +29,11 @@ The following **optional** features are implemented:
 
 - [ ] User can load more tweets once they reach the bottom of the feed using infinite loading similar to the actual Twitter client.
 - [ ] User should be able to unretweet and unfavorite and should decrement the retweet and favorite count.
-- [ ] When composing, you should have a countdown in the upper right for the tweet limit.
+- [x] When composing, you should have a countdown in the upper right for the tweet limit.
 - [ ] After creating a new tweet, a user should be able to view it in the timeline immediately without refetching the timeline from the network.
 - [ ] User can reply to any tweet, and replies should be prefixed with the username and the reply_id should be set when posting the tweet
 - [ ] Links in tweets are clickable
-- [ ] User can switch between timeline, mentions, or profile view through a tab bar
+- [x] User can switch between timeline, mentions, or profile view through a tab bar
 - [ ] Pulling down the profile page should blur and resize the header image.
 
 The following **additional** features are implemented:
