@@ -23,7 +23,7 @@ The following **required** functionality is completed:
    - [ ] Profile view should include that user's timeline
 - [x] User can navigate to view their own profile
    - [x] Contains the user header view: picture and tagline
-   - [ ] Contains a section with the users basic stats: # tweets, # following, # followers
+   - [x] Contains a section with the users basic stats: # tweets, # following, # followers
 
 The following **optional** features are implemented:
 
