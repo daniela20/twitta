@@ -21,7 +21,9 @@
                                 <rect key="frame" x="256" y="255" width="89" height="89"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="89" id="GFa-Hg-jR7"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="89" id="Rkz-MM-xxM"/>
                                     <constraint firstAttribute="height" constant="89" id="SMy-JM-8BK"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="89" id="Y7D-Tg-lja"/>
                                 </constraints>
                             </imageView>
                         </subviews>

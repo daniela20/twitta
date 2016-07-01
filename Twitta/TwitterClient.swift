@@ -29,8 +29,8 @@ class TwitterClient: BDBOAuth1SessionManager {
         })
     }
     
-    func userTimeline(success: ([Tweet]) -> (), failure: (NSError) -> ()) {
-        GET("1.1/statuses/user_timeline.json?screen_name=\(User.currentUser!.username!)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+    func userTimeline(user: User, success: ([Tweet]) -> (), failure: (NSError) -> ()) {
+        GET("1.1/statuses/user_timeline.json?screen_name=\(user.username!)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
             let dictionaries = response as! [NSDictionary]
             let tweets = Tweet.tweetsWithArray(dictionaries)
             success(tweets)
@@ -50,9 +50,9 @@ class TwitterClient: BDBOAuth1SessionManager {
         })
     }
     
-    func bannerImage(success: (NSDictionary)->(), failure: (NSError) -> ()) {
-        if User.currentUser?.username != nil {
-            GET("1.1/users/profile_banner.json?screen_name=\(User.currentUser!.username!)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+    func bannerImage(user: User, success: (NSDictionary)->(), failure: (NSError) -> ()) {
+        if user.username != nil {
+            GET("1.1/users/profile_banner.json?screen_name=\(user.username!)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
                 print("got banner")
                 let bannerDictionary = response as! NSDictionary
                 success(bannerDictionary)
@@ -60,6 +60,16 @@ class TwitterClient: BDBOAuth1SessionManager {
                 failure(error)
             })
         }
+    }
+    
+    func tweet(status: String, success: (NSDictionary)->(), failure: (NSError) -> ()) {
+        POST("1.1/statuses/update.json?status=\(status)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+            let responseDictionary = response as! NSDictionary
+            print("tweeted")
+            success(responseDictionary)
+        }, failure: { (task: NSURLSessionDataTask?, error: NSError) -> Void in
+            failure(error)
+        })
     }
     
     func retweet(id: String, success: (NSDictionary)->(), failure: (NSError) -> ()) {
@@ -72,12 +82,32 @@ class TwitterClient: BDBOAuth1SessionManager {
         })
     }
     
-    func favorite (id: String, success: (NSDictionary)->(), failure: (NSError) -> ()) {
+    func unretweet(id: String, success: (NSDictionary)->(), failure: (NSError) -> ()) {
+        POST("1.1/statuses/unretweet/\(id).json", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+            let responseDictionary = response as! NSDictionary
+            print("unretweeted")
+            success(responseDictionary)
+            }, failure: { (task: NSURLSessionDataTask?, error: NSError) -> Void in
+                failure(error)
+        })
+    }
+    
+    func favorite(id: String, success: (NSDictionary)->(), failure: (NSError) -> ()) {
         POST("1.1/favorites/create.json?id=\(id)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
             let responseDictionary = response as! NSDictionary
             print("favorited")
             success(responseDictionary)
         }, failure: { (task: NSURLSessionDataTask?, error: NSError) -> Void in
+                failure(error)
+        })
+    }
+    
+    func unfavorite(id: String, success: (NSDictionary)->(), failure: (NSError) -> ()) {
+        POST("1.1/favorites/destroy.json?id=\(id)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+            let responseDictionary = response as! NSDictionary
+            print("unfavorited")
+            success(responseDictionary)
+            }, failure: { (task: NSURLSessionDataTask?, error: NSError) -> Void in
                 failure(error)
         })
     }

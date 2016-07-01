@@ -11,8 +11,11 @@ import BDBOAuth1Manager
 
 class LoginViewController: UIViewController {
 
+    @IBOutlet weak var loginView: UIView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        loginView.layer.cornerRadius = 7
 
         // Do any additional setup after loading the view.
     }

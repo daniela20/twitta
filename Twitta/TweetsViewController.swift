@@ -14,6 +14,13 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     var tweets: [Tweet]!
     var feedSize: Int = 20
     
+    @IBAction func onImageClick(sender: AnyObject) {
+        
+    }
+    
+    @IBAction func onComposeClick(sender: AnyObject) {
+        self.performSegueWithIdentifier("composeSegue", sender: nil)
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
@@ -32,9 +39,6 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         let client = TwitterClient.sharedInstance
         client.homeTimeline({ (tweets: [Tweet]) in
             self.tweets = tweets
-            /*for tweet in tweets {
-             print(tweet.text)
-             }*/
             self.tableView.reloadData()
         }) { (error: NSError) in
             print("\(error.localizedDescription)")
@@ -74,46 +78,105 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         let cell = tableView.dequeueReusableCellWithIdentifier("TweetCell", forIndexPath: indexPath) as! TweetCell
         
         let tweet = tweets[indexPath.row]
+        let oldTweet = cell.tweet
+        
         cell.tweet = tweet
         cell.tweetLabel.text = tweet.text
         cell.nameLabel.text = tweet.name
         cell.usernameLabel.text = "@" + tweet.username!
         cell.profilePicture.setImageWithURL(tweet.profileImageUrl!)
         
-        if(tweet.retweetCount < cell.newCount && cell.retweetable == true) {
-            cell.retweetCountLabel.text = String(tweet.retweetCount + 1)
-            cell.retweetable = false
+        if(oldTweet == tweet) {
+            if(tweet.retweetCount < cell.newRetweetCount){
+                cell.retweetCountLabel.text = String(cell.newRetweetCount)
+            } else if(tweet.retweetCount - 1 == cell.newRetweetCount) {
+                cell.retweetCountLabel.text = String(cell.newRetweetCount)
+            } else {
+                cell.retweetCountLabel.text = String(tweet.retweetCount)
+            }
+        
+            if(tweet.favoriteCount < cell.newFavoriteCount){
+                cell.favoriteCountLabel.text = String(cell.newFavoriteCount)
+            } else if(tweet.favoriteCount - 1 == cell.newFavoriteCount) {
+                cell.favoriteCountLabel.text = String(cell.newFavoriteCount)
+            } else {
+                cell.favoriteCountLabel.text = String(tweet.favoriteCount)
+            }
+        
+            if(cell.favorited == true) {
+                cell.favoriteImage.image = UIImage(imageLiteral: "like-red")
+            } else if(cell.favorited == false) {
+                cell.favoriteImage.image = UIImage(imageLiteral: "favorite")
+            } else {
+                if(tweet.favorited == true) {
+                    cell.favoriteImage.image = UIImage(imageLiteral: "like-red")
+                } else {
+                    cell.favoriteImage.image = UIImage(imageLiteral: "favorite")
+                }
+            }
+    
+            if(cell.retweeted == true) {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-green")
+            } else if(cell.retweeted == false) {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+            } else {
+                if(tweet.retweeted == true) {
+                    cell.retweetImage.image = UIImage(imageLiteral: "retweet-green")
+                } else {
+                    cell.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+                }
+            }
         } else {
             cell.retweetCountLabel.text = String(tweet.retweetCount)
+            cell.favoriteCountLabel.text = String(tweet.favoriteCount)
+            if(tweet.retweeted == true) {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-green")
+            } else {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+            }
         }
         
-        cell.favoriteCountLabel.text = String(tweet.favoriteCount)
-        
         let formatter = NSDateFormatter()
-        formatter.dateFormat = "MMM d HH:mm y"
+        formatter.dateFormat = "MMM d y"
         cell.timestampLabel.text = formatter.stringFromDate(tweet.timestamp!)
         
         return cell
     }
     
     @IBAction func onFavorite(sender: AnyObject) {
+        //print("loading tweets")
         loadTweets()
         tableView.reloadData()
     }
     
     @IBAction func onRetweet(sender: AnyObject) {
+        //print("loading tweets")
         loadTweets()
         tableView.reloadData()
     }
     
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        if(segue.identifier == "detailSegue"){
+            let cell = sender as! UITableViewCell
+            let indexPath = tableView.indexPathForCell(cell)
+            let tweet = tweets[indexPath!.row]
+            
+            let detailViewController = segue.destinationViewController as! DetailViewController
+            detailViewController.tweet = tweet
+        } else if(segue.identifier == "profileSegue"){
+            let cell = sender!.superview!!.superview as! UITableViewCell
+            let indexPath = tableView.indexPathForCell(cell)
+            let tweet = tweets[indexPath!.row]
+            
+            let profileViewController = segue.destinationViewController as! ProfileViewController
+            profileViewController.user = tweet.user!
+        }
     }
-    */
 
 }

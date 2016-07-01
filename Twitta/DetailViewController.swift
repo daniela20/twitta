@@ -10,8 +10,18 @@ import UIKit
 
 class DetailViewController: UIViewController {
 
+    @IBOutlet weak var profileImage: UIImageView!
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var usernameLabel: UILabel!
+    @IBOutlet weak var textLabel: UILabel!
+    
+    var tweet: Tweet?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        nameLabel.text = tweet?.name
+        usernameLabel.text = tweet?.username
+        textLabel.text = tweet?.text
 
         // Do any additional setup after loading the view.
     }
@@ -22,14 +32,17 @@ class DetailViewController: UIViewController {
     }
     
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        if(segue.identifier == "profileSegue2"){
+            
+            let profileViewController = segue.destinationViewController as! ProfileViewController
+            profileViewController.user = tweet!.user
+        }
     }
-    */
+    
 
 }

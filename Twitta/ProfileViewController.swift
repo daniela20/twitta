@@ -19,9 +19,11 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var bioLabel: UILabel!
     @IBOutlet weak var bgView: UIView!
+    @IBOutlet weak var tweetsCountLabel: UILabel!
     
     var tweets: [Tweet]!
     var feedSize: Int = 20
+    var user: User?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,49 +40,57 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         profileImage.layer.borderWidth = 3
         
         let client = TwitterClient.sharedInstance
-        client.currentAccount({ (user: User) in
-            self.nameLabel.text = user.name
-            self.usernameLabel.text = "@" + user.username!
-            self.profileImage.setImageWithURL(user.profileImageUrl!)
-            self.bioLabel.text = user.bio
-            self.followerCountLabel.text = String(user.followerCount)
-            self.followingCountLabel.text = String(user.followingCount)
-            
-            self.loadTweets()
-            
-            client.bannerImage({ (bannerDictionary: NSDictionary) in
-                print(bannerDictionary)
-                if let sizeDictionary = bannerDictionary["sizes"] as? NSDictionary {
-                    if let mobileDictionary = sizeDictionary["web"] as? NSDictionary {
-                        let bannerUrlString = mobileDictionary["url"] as? String
-                        if let bannerUrlString = bannerUrlString {
-                            print("URL: \(bannerUrlString)")
-                            let bannerUrl = NSURL(string: bannerUrlString)
-                            self.coverImage.setImageWithURL(bannerUrl!)
-                        }
+        
+        print("user: \(user)")
+        if(user == nil){
+            user = User.currentUser
+        }
+
+        self.nameLabel.text = user!.name
+        self.usernameLabel.text = "@" + user!.username!
+        self.profileImage.setImageWithURL(user!.profileImageUrl!)
+        self.bioLabel.text = user!.bio
+        self.followerCountLabel.text = String(user!.followerCount)
+        self.followingCountLabel.text = String(user!.followingCount)
+        self.tweetsCountLabel.text = String(user!.tweetsCount)
+        
+        self.loadTweets()
+        
+        client.bannerImage(user!, success: { (bannerDictionary: NSDictionary) in
+            if let sizeDictionary = bannerDictionary["sizes"] as? NSDictionary {
+                if let mobileDictionary = sizeDictionary["web"] as? NSDictionary {
+                    let bannerUrlString = mobileDictionary["url"] as? String
+                    if let bannerUrlString = bannerUrlString {
+                        let fixedString = bannerUrlString.stringByReplacingOccurrencesOfString("/web", withString: "")
+                        let bannerUrl = NSURL(string: fixedString)
+                        self.coverImage.setImageWithURL(bannerUrl!)
                     }
                 }
-                
-            }, failure: { (error: NSError) in
-                print("\(error.localizedDescription)")
-            })
+            }
             
         }, failure: { (error: NSError) in
             print("\(error.localizedDescription)")
         })
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), forControlEvents: UIControlEvents.ValueChanged)
+        tableView.insertSubview(refreshControl, atIndex: 0)
         
         self.tableView.reloadData()
 
         // Do any additional setup after loading the view.
     }
     
+    func refreshControlAction(refreshControl: UIRefreshControl) {
+        loadTweets()
+        self.tableView.reloadData()
+        refreshControl.endRefreshing()
+    }
+    
     func loadTweets() {
         let client = TwitterClient.sharedInstance
-        client.userTimeline({ (tweets: [Tweet]) in
+        client.userTimeline(user!, success: { (tweets: [Tweet]) in
             self.tweets = tweets
-            /*for tweet in tweets {
-             print(tweet.text)
-             }*/
             self.tableView.reloadData()
         }) { (error: NSError) in
             print("\(error.localizedDescription)")
@@ -110,30 +120,100 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         let cell = tableView.dequeueReusableCellWithIdentifier("TweetCell", forIndexPath: indexPath) as! TweetCell
         
         let tweet = tweets[indexPath.row]
+        let oldTweet = cell.tweet
+        
         cell.tweet = tweet
         cell.tweetLabel.text = tweet.text
         cell.nameLabel.text = tweet.name
         cell.usernameLabel.text = "@" + tweet.username!
         cell.profilePicture.setImageWithURL(tweet.profileImageUrl!)
-        cell.retweetCountLabel.text = String(tweet.retweetCount)
-        cell.favoriteCountLabel.text = String(tweet.favoriteCount)
+        
+        if(oldTweet == tweet) {
+            if(tweet.retweetCount < cell.newRetweetCount){
+                cell.retweetCountLabel.text = String(cell.newRetweetCount)
+            } else if(tweet.retweetCount - 1 == cell.newRetweetCount) {
+                cell.retweetCountLabel.text = String(cell.newRetweetCount)
+            } else {
+                cell.retweetCountLabel.text = String(tweet.retweetCount)
+            }
+            
+            if(tweet.favoriteCount < cell.newFavoriteCount){
+                cell.favoriteCountLabel.text = String(cell.newFavoriteCount)
+            } else if(tweet.favoriteCount - 1 == cell.newFavoriteCount) {
+                cell.favoriteCountLabel.text = String(cell.newFavoriteCount)
+            } else {
+                cell.favoriteCountLabel.text = String(tweet.favoriteCount)
+            }
+            
+            if(cell.favorited == true) {
+                cell.favoriteImage.image = UIImage(imageLiteral: "like-red")
+            } else if(cell.favorited == false) {
+                cell.favoriteImage.image = UIImage(imageLiteral: "favorite")
+            } else {
+                if(tweet.favorited == true) {
+                    cell.favoriteImage.image = UIImage(imageLiteral: "like-red")
+                } else {
+                    cell.favoriteImage.image = UIImage(imageLiteral: "favorite")
+                }
+            }
+            
+            if(cell.retweeted == true) {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-green")
+            } else if(cell.retweeted == false) {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+            } else {
+                if(tweet.retweeted == true) {
+                    cell.retweetImage.image = UIImage(imageLiteral: "retweet-green")
+                } else {
+                    cell.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+                }
+            }
+        } else {
+            cell.retweetCountLabel.text = String(tweet.retweetCount)
+            cell.favoriteCountLabel.text = String(tweet.favoriteCount)
+            if(tweet.retweeted == true) {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-green")
+            } else {
+                cell.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+            }
+        }
         
         let formatter = NSDateFormatter()
-        formatter.dateFormat = "MMM d HH:mm y"
+        formatter.dateFormat = "MMM d y"
         cell.timestampLabel.text = formatter.stringFromDate(tweet.timestamp!)
         
         return cell
     }
     
+    @IBAction func onFavorite(sender: AnyObject) {
+        loadTweets()
+        tableView.reloadData()
+    }
+    
+    @IBAction func onRetweet(sender: AnyObject) {
+        loadTweets()
+        tableView.reloadData()
+    }
+    
+    @IBAction func onLogout(sender: AnyObject) {
+        TwitterClient.sharedInstance.logout()
+    }
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        if(segue.identifier == "detailSegue2"){
+            let cell = sender as! UITableViewCell
+            let indexPath = tableView.indexPathForCell(cell)
+            let tweet = tweets[indexPath!.row]
+ 
+            let detailViewController = segue.destinationViewController as! DetailViewController
+            detailViewController.tweet = tweet
+        }
     }
-    */
 
 }

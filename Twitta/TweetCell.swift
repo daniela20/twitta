@@ -17,10 +17,14 @@ class TweetCell: UITableViewCell {
     @IBOutlet weak var profilePicture: UIImageView!
     @IBOutlet weak var favoriteCountLabel: UILabel!
     @IBOutlet weak var retweetCountLabel: UILabel!
+    @IBOutlet weak var favoriteImage: UIImageView!
+    @IBOutlet weak var retweetImage: UIImageView!
     
     var tweet: Tweet?
-    var retweetable: Bool = true
-    var newCount: Int = 0
+    var retweeted: Bool?
+    var favorited: Bool?
+    var newRetweetCount: Int = 0
+    var newFavoriteCount: Int = 0
     let client = TwitterClient.sharedInstance
     
     override func awakeFromNib() {
@@ -35,22 +39,51 @@ class TweetCell: UITableViewCell {
     }
     
     @IBAction func onFavorite(sender: AnyObject) {
-        client.favorite(tweet!.id!, success: { (favorite: NSDictionary) in
-        }) { (error: NSError) in
-            print("\(error.localizedDescription)")
+        if(favorited == nil) {
+            favorited = tweet?.favorited
         }
+        print("favorited = \(favorited)")
+        if(favorited == false) {
+            newFavoriteCount = Int(favoriteCountLabel.text!)! + 1
+            client.favorite(tweet!.id!, success: { (favorite: NSDictionary) in
+            }) { (error: NSError) in
+                print("\(error.localizedDescription)")
+            }
+            self.favoriteImage.image = UIImage(imageLiteral: "like-red")
+            favorited = true
+        } else {
+            newFavoriteCount = Int(favoriteCountLabel.text!)! - 1
+            client.unfavorite(tweet!.id!, success: { (favorite: NSDictionary) in
+            }) { (error: NSError) in
+                print("\(error.localizedDescription)")
+            }
+            self.favoriteImage.image = UIImage(imageLiteral: "favorite")
+            favorited = false
+        }
+        print("updated favorited = \(favorited)")
     }
     
     @IBAction func onRetweet(sender: AnyObject) {
-        if(retweetable == true) {
-            newCount = tweet!.retweetCount + 1
+        if(retweeted == nil) {
+            retweeted = tweet?.retweeted
+        }
+        print("retweeted = \(retweeted)")
+        if(retweeted == false) {
+            newRetweetCount = Int(retweetCountLabel.text!)! + 1
             client.retweet(tweet!.id!, success: { (retweet: NSDictionary) in
             }) { (error: NSError) in
                 print("\(error.localizedDescription)")
             }
+            retweeted = true
         } else {
-            print("already retweeted")
+            newRetweetCount = Int(retweetCountLabel.text!)! - 1
+            client.unretweet(tweet!.id!, success: { (retweet: NSDictionary) in
+            }) { (error: NSError) in
+                print("\(error.localizedDescription)")
+            }
+            self.retweetImage.image = UIImage(imageLiteral: "retweet-large")
+            retweeted = false
         }
+        print("updated retweeted = \(retweeted)")
     }
-
 }
