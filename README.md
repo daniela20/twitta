@@ -13,9 +13,9 @@ The following **required** functionality is completed:
 - [x] User can view last 20 tweets from their home timeline
 - [x] In the home timeline, user can view tweet with the user profile picture, username, tweet text, and timestamp.
 - [x] User can pull to refresh.
-- [ ] User should display the relative timestamp for each tweet "8m", "7h"
+- [x] User should display the relative timestamp for each tweet "8m", "7h"
 - [x] Retweeting and favoriting should increment the retweet and favorite count.
-- [ ] User can tap on a tweet to view it, with controls to retweet, favorite, and reply.
+- [x] User can tap on a tweet to view it, with controls to retweet, favorite, and reply.
 - [x] User can compose a new tweet by tapping on a compose button.
 - [x] User can tap the profile image in any tweet to see another user's profile
    - [x] Contains the user header view: picture and tagline
@@ -27,7 +27,7 @@ The following **required** functionality is completed:
 
 The following **optional** features are implemented:
 
-- [ ] User can load more tweets once they reach the bottom of the feed using infinite loading similar to the actual Twitter client.
+- [x] User can load more tweets once they reach the bottom of the feed using infinite loading similar to the actual Twitter client.
 - [x] User should be able to unretweet and unfavorite and should decrement the retweet and favorite count.
 - [x] When composing, you should have a countdown in the upper right for the tweet limit.
 - [ ] After creating a new tweet, a user should be able to view it in the timeline immediately without refetching the timeline from the network.
@@ -38,24 +38,31 @@ The following **optional** features are implemented:
 
 The following **additional** features are implemented:
 
-- [ ] List anything else that you can get done to improve the app functionality!
+- [x] Retweet/favorite counts and icons update immediately on click, no refresh needed.
 
 Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
 
-1.
-2.
+1. Making URL's clickable.
+2. Implementing reply.
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<a href="http://imgur.com/4vD8PR0"><img src="http://imgur.com/4vD8PR0.gif" title="source: imgur.com" /></a>
+<a href="http://imgur.com/8QYhUQc"><img src="http://imgur.com/8QYhUQc.gif" title="source: imgur.com" /></a>
+<a href="http://imgur.com/PfVCpuP"><img src="http://imgur.com/PfVCpuP.gif" title="source: imgur.com" /></a>
+<a href="http://imgur.com/9lONXeB"><img src="http://imgur.com/9lONXeB.gif" title="source: imgur.com" /></a>
+
+iPad Retina to demonstrate AutoLayout:
+
+<a href="http://imgur.com/yH0D4qo"><img src="http://imgur.com/yH0D4qo.gif" title="source: imgur.com" /></a>
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
-Describe any challenges encountered while building the app.
+AutoLayout was challenging, but I think I'm getting the hang of it!
 
 ## Credits
 
