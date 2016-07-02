@@ -48,7 +48,6 @@ class ComposeViewController: UIViewController, UITextViewDelegate {
         if(textField.text.characters.count > 0) {
             let client = TwitterClient.sharedInstance
             let encodedText = textField.text.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())
-            print(encodedText)
             client.tweet(encodedText!, success: { (response: NSDictionary) in
                 print("success")
             }) { (error: NSError) in
@@ -59,6 +58,11 @@ class ComposeViewController: UIViewController, UITextViewDelegate {
         }
     }
 
+    @IBAction func onExit(sender: AnyObject) {
+        self.dismissViewControllerAnimated(true) {
+        }
+
+    }
     /*
     // MARK: - Navigation
 

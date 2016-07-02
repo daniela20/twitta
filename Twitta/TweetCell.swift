@@ -42,7 +42,6 @@ class TweetCell: UITableViewCell {
         if(favorited == nil) {
             favorited = tweet?.favorited
         }
-        print("favorited = \(favorited)")
         if(favorited == false) {
             newFavoriteCount = Int(favoriteCountLabel.text!)! + 1
             client.favorite(tweet!.id!, success: { (favorite: NSDictionary) in
@@ -60,20 +59,19 @@ class TweetCell: UITableViewCell {
             self.favoriteImage.image = UIImage(imageLiteral: "favorite")
             favorited = false
         }
-        print("updated favorited = \(favorited)")
     }
     
     @IBAction func onRetweet(sender: AnyObject) {
         if(retweeted == nil) {
             retweeted = tweet?.retweeted
         }
-        print("retweeted = \(retweeted)")
         if(retweeted == false) {
             newRetweetCount = Int(retweetCountLabel.text!)! + 1
             client.retweet(tweet!.id!, success: { (retweet: NSDictionary) in
             }) { (error: NSError) in
                 print("\(error.localizedDescription)")
             }
+            self.retweetImage.image = UIImage(imageLiteral: "retweet-green")
             retweeted = true
         } else {
             newRetweetCount = Int(retweetCountLabel.text!)! - 1
@@ -84,6 +82,5 @@ class TweetCell: UITableViewCell {
             self.retweetImage.image = UIImage(imageLiteral: "retweet-large")
             retweeted = false
         }
-        print("updated retweeted = \(retweeted)")
     }
 }

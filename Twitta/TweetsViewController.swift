@@ -8,15 +8,13 @@
 
 import UIKit
 
-class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     var tweets: [Tweet]!
     var feedSize: Int = 20
-    
-    @IBAction func onImageClick(sender: AnyObject) {
-        
-    }
+    var reloading: Bool = false
+    var isMoreDataLoading = false
     
     @IBAction func onComposeClick(sender: AnyObject) {
         self.performSegueWithIdentifier("composeSegue", sender: nil)
@@ -25,6 +23,8 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.estimatedRowHeight = 100
+        tableView.rowHeight = UITableViewAutomaticDimension
         
         loadTweets()
         
@@ -37,18 +37,22 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     
     func loadTweets() {
         let client = TwitterClient.sharedInstance
-        client.homeTimeline({ (tweets: [Tweet]) in
+        print("passing in feedSize \(feedSize)")
+        client.homeTimeline(feedSize, success: { (tweets: [Tweet]) in
             self.tweets = tweets
             self.tableView.reloadData()
+            self.isMoreDataLoading = false
         }) { (error: NSError) in
             print("\(error.localizedDescription)")
         }
     }
     
     func refreshControlAction(refreshControl: UIRefreshControl) {
+        reloading = true;
         loadTweets()
         self.tableView.reloadData()
         refreshControl.endRefreshing()
+        reloading = false;
     }
 
     override func didReceiveMemoryWarning() {
@@ -86,7 +90,7 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         cell.usernameLabel.text = "@" + tweet.username!
         cell.profilePicture.setImageWithURL(tweet.profileImageUrl!)
         
-        if(oldTweet == tweet) {
+        if(reloading == false && oldTweet != nil && oldTweet!.id == tweet.id) {
             if(tweet.retweetCount < cell.newRetweetCount){
                 cell.retweetCountLabel.text = String(cell.newRetweetCount)
             } else if(tweet.retweetCount - 1 == cell.newRetweetCount) {
@@ -136,21 +140,17 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
             }
         }
         
-        let formatter = NSDateFormatter()
-        formatter.dateFormat = "MMM d y"
-        cell.timestampLabel.text = formatter.stringFromDate(tweet.timestamp!)
+        cell.timestampLabel.text = tweet.timeString
         
         return cell
     }
     
     @IBAction func onFavorite(sender: AnyObject) {
-        //print("loading tweets")
         loadTweets()
         tableView.reloadData()
     }
     
     @IBAction func onRetweet(sender: AnyObject) {
-        //print("loading tweets")
         loadTweets()
         tableView.reloadData()
     }
@@ -163,11 +163,15 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         if(segue.identifier == "detailSegue"){
-            let cell = sender as! UITableViewCell
+            let cell = sender as! TweetCell
             let indexPath = tableView.indexPathForCell(cell)
             let tweet = tweets[indexPath!.row]
             
             let detailViewController = segue.destinationViewController as! DetailViewController
+            detailViewController.retweeted = cell.retweeted
+            detailViewController.favorited = cell.favorited
+            detailViewController.favoriteCount = Int(cell.favoriteCountLabel.text!)
+            detailViewController.retweetCount = Int(cell.retweetCountLabel.text!)
             detailViewController.tweet = tweet
         } else if(segue.identifier == "profileSegue"){
             let cell = sender!.superview!!.superview as! UITableViewCell
@@ -178,5 +182,26 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
             profileViewController.user = tweet.user!
         }
     }
+    
+    func loadMoreData() {
+        if(feedSize < 200){
+            feedSize += 5
+        }
+        loadTweets()
+        tableView.reloadData()
+    }
+    
+    func scrollViewDidScroll(scrollView: UIScrollView) {
+        if (!isMoreDataLoading) {
+            let scrollViewContentHeight = tableView.contentSize.height
+            let scrollOffsetThreshold = scrollViewContentHeight - tableView.bounds.size.height
+            
+            if(scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
+                isMoreDataLoading = true
+                loadMoreData()
+            }
+        }
+    }
+
 
 }

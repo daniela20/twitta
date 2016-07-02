@@ -16,9 +16,8 @@ class TwitterClient: BDBOAuth1SessionManager {
     var loginSuccess: (() -> ())?
     var loginFailure: ((NSError) -> ())?
     
-    func homeTimeline(success: ([Tweet]) -> (), failure: (NSError) -> ()) {
-        
-        GET("1.1/statuses/home_timeline.json", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+    func homeTimeline(count: Int, success: ([Tweet]) -> (), failure: (NSError) -> ()) {
+        GET("1.1/statuses/home_timeline.json?count=\(count)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
             let dictionaries = response as! [NSDictionary]
             let tweets = Tweet.tweetsWithArray(dictionaries)
             
@@ -29,8 +28,8 @@ class TwitterClient: BDBOAuth1SessionManager {
         })
     }
     
-    func userTimeline(user: User, success: ([Tweet]) -> (), failure: (NSError) -> ()) {
-        GET("1.1/statuses/user_timeline.json?screen_name=\(user.username!)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
+    func userTimeline(count: Int, user: User, success: ([Tweet]) -> (), failure: (NSError) -> ()) {
+        GET("1.1/statuses/user_timeline.json?screen_name=\(user.username!)&count=\(count)", parameters: nil, progress: nil, success: { (task: NSURLSessionDataTask, response: AnyObject?) -> Void in
             let dictionaries = response as! [NSDictionary]
             let tweets = Tweet.tweetsWithArray(dictionaries)
             success(tweets)
@@ -129,7 +128,6 @@ class TwitterClient: BDBOAuth1SessionManager {
     
     func handleOpenUrl(url: NSURL) {
         let requestToken = BDBOAuth1Credential(queryString: url.query)
-        
         fetchAccessTokenWithPath("oauth/access_token", method: "POST", requestToken: requestToken, success: { (accessToken: BDBOAuth1Credential!) -> Void in
             self.currentAccount({ (user: User) -> () in
                 User.currentUser = user

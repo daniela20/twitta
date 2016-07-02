@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ProfileViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ProfileViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
 
     @IBOutlet weak var profileImage: UIImageView!
     @IBOutlet weak var coverImage: UIImageView!
@@ -24,12 +24,15 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     var tweets: [Tweet]!
     var feedSize: Int = 20
     var user: User?
+    var isMoreDataLoading = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 120
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.estimatedRowHeight = 100
+        tableView.rowHeight = UITableViewAutomaticDimension
         
         bgView.layer.borderColor = UIColor(white: 0.74, alpha: 1.0).CGColor
         bgView.layer.borderWidth = 1;
@@ -89,7 +92,7 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func loadTweets() {
         let client = TwitterClient.sharedInstance
-        client.userTimeline(user!, success: { (tweets: [Tweet]) in
+        client.userTimeline(feedSize, user: user!, success: { (tweets: [Tweet]) in
             self.tweets = tweets
             self.tableView.reloadData()
         }) { (error: NSError) in
@@ -128,7 +131,7 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         cell.usernameLabel.text = "@" + tweet.username!
         cell.profilePicture.setImageWithURL(tweet.profileImageUrl!)
         
-        if(oldTweet == tweet) {
+        if(oldTweet != nil && oldTweet!.id == tweet.id) {
             if(tweet.retweetCount < cell.newRetweetCount){
                 cell.retweetCountLabel.text = String(cell.newRetweetCount)
             } else if(tweet.retweetCount - 1 == cell.newRetweetCount) {
@@ -178,9 +181,7 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
             }
         }
         
-        let formatter = NSDateFormatter()
-        formatter.dateFormat = "MMM d y"
-        cell.timestampLabel.text = formatter.stringFromDate(tweet.timestamp!)
+        cell.timestampLabel.text = tweet.timeString
         
         return cell
     }
@@ -195,11 +196,6 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.reloadData()
     }
     
-    @IBAction func onLogout(sender: AnyObject) {
-        TwitterClient.sharedInstance.logout()
-    }
-
-    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -207,13 +203,40 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         if(segue.identifier == "detailSegue2"){
-            let cell = sender as! UITableViewCell
+            let cell = sender as! TweetCell
             let indexPath = tableView.indexPathForCell(cell)
             let tweet = tweets[indexPath!.row]
  
             let detailViewController = segue.destinationViewController as! DetailViewController
+            detailViewController.retweeted = cell.retweeted
+            detailViewController.favorited = cell.favorited
+            detailViewController.favoriteCount = Int(cell.favoriteCountLabel.text!)
+            detailViewController.retweetCount = Int(cell.retweetCountLabel.text!)
             detailViewController.tweet = tweet
         }
     }
 
+    @IBAction func onLogout(sender: AnyObject) {
+        TwitterClient.sharedInstance.logout()
+    }
+    
+    func loadMoreData() {
+        if(feedSize < 200){
+            feedSize += 5
+        }
+        loadTweets()
+        tableView.reloadData()
+    }
+    
+    func scrollViewDidScroll(scrollView: UIScrollView) {
+        if (!isMoreDataLoading) {
+            let scrollViewContentHeight = tableView.contentSize.height
+            let scrollOffsetThreshold = scrollViewContentHeight - tableView.bounds.size.height
+            
+            if(scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
+                isMoreDataLoading = true
+                loadMoreData()
+            }
+        }
+    }
 }

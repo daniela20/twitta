@@ -21,20 +21,40 @@ class Tweet: NSObject {
     var retweeted: Bool?
     var favorited: Bool?
     var user: User?
+    var timeString: String?
     
     init(dictionary: NSDictionary){
         text = dictionary["text"] as? String
         id = dictionary["id_str"] as? String
-        retweetCount = (dictionary["retweet_count"] as? Int) ?? 0
-        favoriteCount = (dictionary["favorite_count"] as? Int) ?? 0
         
         retweeted = dictionary["retweeted"] as? Bool
         favorited = dictionary["favorited"] as? Bool
+        retweetCount = (dictionary["retweet_count"] as? Int) ?? 0
+        if let retweetedTweet = dictionary["retweeted_status"] as? NSDictionary {
+            favoriteCount = (retweetedTweet["favorite_count"] as? Int) ?? 0
+        } else {
+            favoriteCount = (dictionary["favorite_count"] as? Int) ?? 0
+        }
         
         if let timestampString = dictionary["created_at"] as? String {
             let formatter = NSDateFormatter()
             formatter.dateFormat = "EEE MMM d HH:mm:ss Z y"
             timestamp = formatter.dateFromString(timestampString)
+            
+            let timeInterval = Int(CFDateGetTimeIntervalSinceDate(NSDate(), timestamp))
+            if(timeInterval < 60) {
+                timeString = "just now"
+            } else if(timeInterval < 3600) {
+                timeString = "\(timeInterval/60)m"
+            } else if(timeInterval < 86400) {
+                timeString = "\(timeInterval/60/60)h"
+            } else if(timeInterval < 604800){
+                timeString = "\(timeInterval/24/60/60)d"
+            } else {
+                let formatter = NSDateFormatter()
+                formatter.dateFormat = "M/d/YY"
+                timeString = formatter.stringFromDate(timestamp!)
+            }
         }
         
         if let userInfo = dictionary["user"] as? NSDictionary {
