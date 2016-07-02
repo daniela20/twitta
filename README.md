@@ -54,7 +54,8 @@ Here's a walkthrough of implemented user stories:
 <a href="http://imgur.com/PfVCpuP"><img src="http://imgur.com/PfVCpuP.gif" title="source: imgur.com" /></a>
 <a href="http://imgur.com/9lONXeB"><img src="http://imgur.com/9lONXeB.gif" title="source: imgur.com" /></a>
 
-iPad Retina to demonstrate AutoLayout: </n>
+iPad Retina to demonstrate AutoLayout:
+
 <a href="http://imgur.com/yH0D4qo"><img src="http://imgur.com/yH0D4qo.gif" title="source: imgur.com" /></a>
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
